@@ -1,0 +1,22 @@
+[canvas]
+base_url = "https://canvas.instructure.com"
+api_token = "inserttokenhere"
+
+[canvas.courses]
+course_id = 12345
+
+[canvas.users]
+include_id = true 
+include_username = true
+include_email = true
+
+[canvas.assignments]
+per_page = 10
+
+[logging]
+level = "INFO"
+file = "canvas_api.log"
+
+[logging.formats]
+console = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+file = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
