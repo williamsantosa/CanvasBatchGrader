@@ -1,8 +1,8 @@
 import requests
 
-class CanvasBatchGrader:
+class CanvasAPI:
     """
-    Handles batch grading operations for Canvas LMS.
+    Wrapper for Canvas API endpoints.
     """
 
     def __init__(self, base_url, api_token):
@@ -48,6 +48,22 @@ class CanvasBatchGrader:
             list: List of user objects
         """
         endpoint = f"{self.base_url}/api/v1/courses/{course_id}/users"
+        response = requests.get(endpoint, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
+    
+    def get_assignment_submissions(self, course_id, assignment_id):
+        """
+        Gets all submissions for a specific assignment.
+
+        args:
+            course_id (int, str): The ID of the course
+            assignment_id (int, str): The ID of the assignment
+
+        ret:
+            list: List of submission objects
+        """
+        endpoint = f"{self.base_url}/api/v1/courses/{course_id}/assignments/{assignment_id}/submissions"
         response = requests.get(endpoint, headers=self.headers)
         response.raise_for_status()
         return response.json()
