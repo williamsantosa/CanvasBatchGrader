@@ -1,10 +1,6 @@
 import requests
 
 class CanvasAPI:
-    """
-    Wrapper for Canvas API endpoints.
-    """
-
     def __init__(self, base_url, api_token):
         self.base_url = base_url
         self.api_token = api_token
@@ -48,6 +44,21 @@ class CanvasAPI:
             list: List of user objects
         """
         endpoint = f"{self.base_url}/api/v1/courses/{course_id}/users"
+        response = requests.get(endpoint, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
+    
+    def get_user(self, user_id):
+        """
+        Gets a user by ID.
+
+        args:
+            user_id (int, str): The ID of the user
+
+        ret:
+            dict: User object
+        """
+        endpoint = f"{self.base_url}/api/v1/users/{user_id}"
         response = requests.get(endpoint, headers=self.headers)
         response.raise_for_status()
         return response.json()

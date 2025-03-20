@@ -24,7 +24,9 @@ if __name__ == "__main__":
     # print(cw.get_users(course_id), "\n", "-"*20)
     # print(cw.get_assignment_submissions(course_id, cw.get_course_assignments(course_id)[0]["id"]), "\n", "-"*20)
 
-    CanvasBatchManager.generate_assignment_template_file(cw.get_course_assignments(course_id)[0], "template.yaml")
+    template_path = CanvasBatchManager.generate_grading_template_file(cw.get_course_assignments(course_id)[0], "output")
+    cbm = CanvasBatchManager(base_url, api_token)
+    cbm.generate_submission_grading_files(template_path, "output")
 
     for item in cw.get_course_assignments(course_id):
         for key, value in item.items():

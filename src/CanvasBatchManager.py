@@ -1,6 +1,7 @@
 import os
 import yaml
 from CanvasAPIWrapper import CanvasAPI
+from CanvasUtils import write_yaml
 
 class CanvasBatchManager:
     def __init__(self, base_url, api_token):
@@ -11,13 +12,13 @@ class CanvasBatchManager:
         self.CanvasAPI = CanvasAPI(base_url, api_token)
 
     @staticmethod
-    def generate_assignment_template_file(assignment, output_path):
+    def generate_grading_template_file(assignment, output_dir):
         """
         Generates a template file for an assignment.
 
         args:
             assignment (dict): The assignment object
-            output_path: The path to save the template file
+            output_dir: The directory path to save the template file
 
         ret:
             str: The path to the template file
@@ -54,5 +55,48 @@ class CanvasBatchManager:
         }
 
         # Create the yaml template file
-        with open(output_path, "w") as f:
-            yaml.dump(template, f, default_flow_style=False, sort_keys=False)
+        file_name = f"{assignment['name'].replace(' ', '_').lower()}_{assignment['id']}_template.yaml"
+        output_path = os.path.join(output_dir, file_name)
+        write_yaml(output_path, template)
+
+        return output_path
+
+    def generate_submission_grading_files(self, grading_template_file, output_dir):
+        """
+        Generates grading files for all submissions of an assignment.
+
+        args:
+            grading_template_file (str): The path to the grading template file
+            output_dir (str): The directory path to save the grading files
+        """
+        # Load the grading template file
+        with open(grading_template_file, "r") as f:
+            grading_template = yaml.safe_load(f)
+
+        # Get all submissions for the assignment
+        submissions = self.CanvasAPI.get_assignment_submissions(grading_template["course_id"], grading_template["assignment_id"])
+        
+        # Get all users for a course
+        users = self.CanvasAPI.get_users(grading_template["course_id"])
+
+        # Create a user dictionary (id -> name)
+        user_dict = {user["id"]: user["name"] for user in users}
+
+        # Generate grading files for each submission
+        for submission in submissions:
+            # Build the grading file object
+            grading = {
+                "assignment_id": grading_template["assignment_id"],
+                "course_id": grading_template["course_id"],
+                "user_id": submission["user_id"],
+                "user_name": user_dict.get(submission["user_id"], "Unknown"),
+                "rubric": grading_template["rubric"],
+                "late_policy": grading_template.get("late_policy", None),
+                "notes": grading_template.get("notes", None),
+                "end_note": grading_template.get("end_note", None)
+            }
+
+            # Create the grading file
+            file_name = f"{grading['user_name'].replace(' ', '_').lower()}_{grading['user_id']}_grading_asgn{grading['assignment_id']}.yaml"
+            output_path = os.path.join(output_dir, file_name)
+            write_yaml(output_path, grading)
